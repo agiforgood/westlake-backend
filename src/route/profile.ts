@@ -130,6 +130,24 @@ app.post("/", async (c) => {
 
     const body = await c.req.json()
     const snapshot = body.snapshot
+    const handle = snapshot.handle
+    if (handle) {
+        const existingProfile = await db.select().from(profile).where(eq(profile.handle, handle))
+        if (existingProfile.length > 0) {
+            return c.json({
+                message: "Handle already exists"
+            }, 400)
+        }
+        if (handle.length < 10) {
+            return c.json({
+                message: "Handle must be at least 10 characters"
+            }, 400)
+        }
+    } else {
+        return c.json({
+            message: "Handle is required"
+        }, 400)
+    }
     const newProfile = await db.update(profile).set({
         newSnapshot: snapshot,
         updatedAt: sql`now()`
