@@ -2,7 +2,7 @@ import { Hono } from "hono"
 import { auth } from "../lib/auth"
 import { db } from "../db"
 import { profile, userTag, tag, userAvailability, user } from "../db/schema";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, ne } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { nanoid } from "nanoid";
 
@@ -132,7 +132,7 @@ app.post("/", async (c) => {
     const snapshot = body.snapshot
     const handle = snapshot.handle
     if (handle) {
-        const existingProfile = await db.select().from(profile).where(eq(profile.handle, handle))
+        const existingProfile = await db.select().from(profile).where(and(eq(profile.handle, handle), ne(profile.userId, user.id)))
         if (existingProfile.length > 0) {
             return c.json({
                 message: "Handle already exists"
