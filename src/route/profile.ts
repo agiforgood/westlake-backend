@@ -143,6 +143,11 @@ app.post("/", async (c) => {
                 message: "Handle must be at least 10 characters"
             }, 400)
         }
+        if (!/^[A-Za-z0-9_-]+$/.test(handle)) {
+            return c.json({
+                message: "Handle must contain only A-Z, a-z, 0-9, -, _"
+            }, 400)
+        }
     } else {
         return c.json({
             message: "Handle is required"
