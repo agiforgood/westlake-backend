@@ -1,0 +1,30 @@
+services:
+  westlake-api:
+    image: registry.magipop.xyz/maic/westlake-api:latest
+    ports:
+      - "127.0.0.1:7000:3000"
+    env_file:
+      - westlake.env
+    networks:
+      - westlake_backend_network
+    restart: always
+    depends_on:
+      - westlake-db
+
+  westlake-db:
+    image: postgres:17
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - POSTGRES_USER=westlake
+      - POSTGRES_PASSWORD=westlake
+      - POSTGRES_DB=westlake
+    restart: always
+    networks:
+      - westlake_backend_network
+
+networks:
+  westlake_backend_network:
+    driver: bridge
