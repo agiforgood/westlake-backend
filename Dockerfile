@@ -31,6 +31,9 @@ FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/index.ts .
 COPY --from=prerelease /usr/src/app/package.json .
+COPY . /usr/src/app/src/
+RUN cd /usr/src/app/src && bun add drizzle-kit
+WORKDIR /usr/src/app
 
 # run the app
 USER bun
