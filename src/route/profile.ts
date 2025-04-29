@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { auth } from "../lib/auth"
 import { db } from "../db"
-import { profile, userTag, tag, userAvailability } from "../db/schema";
+import { profile, userTag, tag, userAvailability, user } from "../db/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { nanoid } from "nanoid";
@@ -33,7 +33,11 @@ app.get("/", async (c) => {
             profile: newProfile
         })
     }
-    const tags = await db.select().from(userTag).where(eq(userTag.userId, user.id)).leftJoin(tag, eq(userTag.tagId, tag.id))
+    const tags = await db.select({
+        id: tag.id,
+        content: tag.content,
+        category: tag.category,
+    }).from(userTag).where(eq(userTag.userId, user.id)).leftJoin(tag, eq(userTag.tagId, tag.id))
     const availability = await db.select().from(userAvailability).where(eq(userAvailability.userId, user.id))
 
     return c.json({
@@ -41,6 +45,45 @@ app.get("/", async (c) => {
         profile: pro[0],
         tags: tags,
         availability: availability
+    })
+})
+
+app.get("/all", async (c) => {
+    const authUser = c.get("user")
+    if (!authUser) {
+        return c.json({
+            message: "Unauthorized"
+        }, 401)
+    }
+
+    const profiles = await db.select({
+        userId: profile.userId,
+        name: user.name,
+        handle: profile.handle,
+        avatarUrl: profile.avatarUrl,
+        statusMessage: profile.statusMessage,
+        expertiseSummary: profile.expertiseSummary,
+    }).from(profile).leftJoin(user, eq(profile.userId, user.id))
+
+    return c.json({
+        message: "Profiles",
+        profiles: profiles
+    })
+})
+
+app.get("/tags", async (c) => {
+    const user = c.get("user")
+    if (!user) {
+        return c.json({
+            message: "Unauthorized"
+        }, 401)
+    }
+
+    const tags = await db.select().from(tag)
+
+    return c.json({
+        message: "Tags",
+        tags: tags
     })
 })
 
@@ -62,7 +105,11 @@ app.get("/:userId", async (c) => {
     let userProfile = pro[0]
     // WIP: - control what a normal user can see
     userProfile.wechat = ""
-    const tags = await db.select().from(userTag).where(eq(userTag.userId, userId)).leftJoin(tag, eq(userTag.tagId, tag.id))
+    const tags = await db.select({
+        id: tag.id,
+        content: tag.content,
+        category: tag.category,
+    }).from(userTag).where(eq(userTag.userId, userId)).leftJoin(tag, eq(userTag.tagId, tag.id))
     const availability = await db.select().from(userAvailability).where(eq(userAvailability.userId, userId))
 
     return c.json({
@@ -172,5 +219,6 @@ app.delete("/availability/:weekDay/:timeSlot", async (c) => {
         message: "Availability deleted"
     })
 })
+
 
 export default app
