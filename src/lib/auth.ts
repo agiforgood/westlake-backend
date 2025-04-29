@@ -5,6 +5,18 @@ import { phoneNumber, openAPI, admin, bearer } from "better-auth/plugins"
 import { user, verification, account, session } from "../db/schema"
 
 export const auth = betterAuth({
+    advanced: {
+        crossSubDomainCookies: {
+            enabled: true,
+            domain: ".westlakeaiforgood.com",
+        },
+        defaultCookieAttributes: {
+            secure: true,
+            httpOnly: true,
+            sameSite: "none",
+            partitioned: true,
+        },
+    },
     emailAndPassword: {
         enabled: true,
     },
@@ -27,5 +39,5 @@ export const auth = betterAuth({
             }
         })
     ],
-    trustedOrigins: ["http://localhost:3001"]
+    trustedOrigins: ["http://localhost:3001", "https://westlakeaiforgood.com", "https://www.westlakeaiforgood.com"]
 });
