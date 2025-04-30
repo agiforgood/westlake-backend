@@ -4,11 +4,13 @@ import { db } from "../db"; // your drizzle instance
 import { phoneNumber, openAPI, admin, bearer } from "better-auth/plugins"
 import { user, verification, account, session } from "../db/schema"
 
+const isProduction = process.env.NODE_ENV === "production"
+
 export const auth = betterAuth({
     advanced: {
         crossSubDomainCookies: {
             enabled: true,
-            domain: ".westlakeaiforgood.com",
+            domain: isProduction ? ".westlakeaiforgood.com" : "localhost",
         },
         defaultCookieAttributes: {
             secure: true,
