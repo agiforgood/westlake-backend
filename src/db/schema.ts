@@ -13,7 +13,8 @@ export const user = pgTable("user", {
     banReason: text('ban_reason'),
     banExpires: timestamp('ban_expires'),
     phoneNumber: text('phone_number').unique(),
-    phoneNumberVerified: boolean('phone_number_verified')
+    phoneNumberVerified: boolean('phone_number_verified'),
+    normalizedEmail: text('normalized_email').unique()
 });
 
 export const session = pgTable("session", {
