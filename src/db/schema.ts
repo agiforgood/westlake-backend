@@ -57,6 +57,7 @@ export const profile = pgTable("profile", {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
     handle: text('handle').notNull().unique(),
+    gender: integer('gender').notNull().default(0),
     avatarUrl: text('avatar_url'),
     bannerUrl: text('banner_url'),
     statusMessage: text('status_message'),

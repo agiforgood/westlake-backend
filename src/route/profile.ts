@@ -30,7 +30,9 @@ app.get("/", async (c) => {
         }).returning();
         return c.json({
             message: "Profile created",
-            profile: newProfile
+            profile: newProfile,
+            tags: [],
+            availability: []
         })
     }
     const tags = await db.select({
@@ -60,6 +62,7 @@ app.get("/all", async (c) => {
         userId: profile.userId,
         name: user.name,
         handle: profile.handle,
+        gender: profile.gender,
         avatarUrl: profile.avatarUrl,
         statusMessage: profile.statusMessage,
         expertiseSummary: profile.expertiseSummary,
@@ -88,23 +91,38 @@ app.get("/tags", async (c) => {
 })
 
 app.get("/:userId", async (c) => {
-    const user = c.get("user")
-    if (!user) {
+    const authUser = c.get("user")
+    if (!authUser) {
         return c.json({
             message: "Unauthorized"
         }, 401)
     }
 
     const userId = c.req.param("userId")
-    const pro = await db.select().from(profile).where(eq(profile.userId, userId))
+    const pro = await db.select({
+        profile,
+        name: user.name,
+    }).from(profile).where(eq(profile.userId, userId)).leftJoin(user, eq(profile.userId, user.id))
+
     if (pro.length === 0) {
         return c.json({
             message: "Profile not found"
         }, 404)
     }
-    let userProfile = pro[0]
+    let userProfileTemp = pro[0]
+    let userProfile = {
+        ...userProfileTemp.profile,
+        name: userProfileTemp.name,
+    }
     // WIP: - control what a normal user can see
     userProfile.wechat = ""
+    const locationVisibility = userProfile.locationVisibility
+    if (locationVisibility < 2) {
+        userProfile.district = ""
+        if (locationVisibility < 1) {
+            userProfile.city = ""
+        }
+    }
     const tags = await db.select({
         id: tag.id,
         content: tag.content,

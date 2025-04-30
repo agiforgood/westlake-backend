@@ -37,14 +37,22 @@ app.post("/profiles", async (c) => {
     }
 
     const body = await c.req.json()
-    const profileId = body.profileId
+    const userId = body.userId
     const isApproved = body.isApproved
+    const profileIds = await db.select().from(profile).where(eq(profile.userId, userId)).limit(1)
+    if (profileIds.length === 0) {
+        return c.json({
+            message: "Profile not found"
+        }, 404)
+    }
+    const profileId = profileIds[0].id
 
     if (isApproved) {
         const oldProfile = await db.select().from(profile).where(eq(profile.id, profileId))
         const snapshot: any = oldProfile[0].newSnapshot
         const newProfile = await db.update(profile).set({
             handle: snapshot.handle,
+            gender: snapshot.gender,
             avatarUrl: snapshot.avatarUrl,
             bannerUrl: snapshot.bannerUrl,
             statusMessage: snapshot.statusMessage,
