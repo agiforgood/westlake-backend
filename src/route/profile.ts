@@ -68,9 +68,26 @@ app.get("/all", async (c) => {
         expertiseSummary: profile.expertiseSummary,
     }).from(profile).leftJoin(user, eq(profile.userId, user.id))
 
+    let result = []
+
+    for (const profile of profiles) {
+        const tags = await db.select({
+            id: tag.id,
+            content: tag.content,
+            category: tag.category,
+        }).from(userTag).where(eq(userTag.userId, profile.userId)).leftJoin(tag, eq(userTag.tagId, tag.id))
+        const availability = await db.select().from(userAvailability).where(eq(userAvailability.userId, profile.userId))
+        const tempProfile = {
+            profile: profile,
+            tags: tags,
+            availability: availability
+        }
+        result.push(tempProfile)
+    }
+
     return c.json({
         message: "Profiles",
-        profiles: profiles
+        profiles: result
     })
 })
 
