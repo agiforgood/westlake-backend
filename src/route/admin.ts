@@ -1,25 +1,21 @@
 import { Hono } from "hono"
-import { auth } from "../lib/auth"
 import { db } from "../db"
-import { profile, tag } from "../db/schema";
+import { profile, tag, user } from "../db/schema";
 import { eq, isNotNull } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
+import { adminMiddleware } from "../middleware/admin";
 
 const app = new Hono<{
     Variables: {
-        user: typeof auth.$Infer.Session.user | null;
-        session: typeof auth.$Infer.Session.session | null
+        user: {
+            id: string,
+        } | null,
     }
 }>();
 
-app.get("/profiles/waiting", async (c) => {
-    const user = c.get("user")
-    if (!user || user.role !== "admin") {
-        return c.json({
-            message: "Unauthorized"
-        }, 401)
-    }
+app.use("*", adminMiddleware)
 
+app.get("/profiles/waiting", async (c) => {
     const waitingProfiles = await db.select().from(profile).where(isNotNull(profile.newSnapshot))
 
     return c.json({
@@ -29,13 +25,6 @@ app.get("/profiles/waiting", async (c) => {
 })
 
 app.post("/profiles", async (c) => {
-    const user = c.get("user")
-    if (!user || user.role !== "admin") {
-        return c.json({
-            message: "Unauthorized"
-        }, 401)
-    }
-
     const body = await c.req.json()
     const userId = body.userId
     const isApproved = body.isApproved
@@ -53,6 +42,7 @@ app.post("/profiles", async (c) => {
         const newProfile = await db.update(profile).set({
             handle: snapshot.handle,
             gender: snapshot.gender,
+            name: snapshot.name,
             avatarUrl: snapshot.avatarUrl,
             bannerUrl: snapshot.bannerUrl,
             statusMessage: snapshot.statusMessage,
@@ -81,13 +71,6 @@ app.post("/profiles", async (c) => {
 })
 
 app.get("/tags", async (c) => {
-    const user = c.get("user")
-    if (!user || user.role !== "admin") {
-        return c.json({
-            message: "Unauthorized"
-        }, 401)
-    }
-
     const tags = await db.select().from(tag)
 
     return c.json({
@@ -97,13 +80,6 @@ app.get("/tags", async (c) => {
 })
 
 app.post("/tags", async (c) => {
-    const user = c.get("user")
-    if (!user || user.role !== "admin") {
-        return c.json({
-            message: "Unauthorized"
-        }, 401)
-    }
-
     const body = await c.req.json()
     const content = body.content
     const category = body.category
@@ -120,13 +96,6 @@ app.post("/tags", async (c) => {
 })
 
 app.delete("/tags/:tagId", async (c) => {
-    const user = c.get("user")
-    if (!user || user.role !== "admin") {
-        return c.json({
-            message: "Unauthorized"
-        }, 401)
-    }
-
     const tagId = c.req.param("tagId")
     await db.delete(tag).where(eq(tag.id, tagId))
 

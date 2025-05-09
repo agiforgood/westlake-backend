@@ -1,5 +1,4 @@
 import { Hono } from "hono"
-import { auth } from "../lib/auth"
 import { db } from "../db"
 import { profile, userTag, tag, userAvailability, user } from "../db/schema";
 import { eq, sql, and, ne } from "drizzle-orm";
@@ -8,24 +7,33 @@ import { nanoid } from "nanoid";
 
 const app = new Hono<{
     Variables: {
-        user: typeof auth.$Infer.Session.user | null;
-        session: typeof auth.$Infer.Session.session | null
+        user: {
+            id: string,
+        } | null,
     }
 }>();
 
 app.get("/", async (c) => {
-    const user = c.get("user")
-    if (!user) {
+    const authUser = c.get("user")
+    if (!authUser) {
         return c.json({
             message: "Unauthorized"
         }, 401)
     }
 
-    const pro = await db.select().from(profile).where(eq(profile.userId, user.id))
+    const dbUser = await db.select().from(user).where(eq(user.id, authUser.id))
+    if (dbUser.length === 0) {
+        await db.insert(user).values({
+            id: authUser.id,
+        })
+    }
+    const newUser = await db.select().from(user).where(eq(user.id, authUser.id))
+
+    const pro = await db.select().from(profile).where(eq(profile.userId, authUser.id))
     if (pro.length === 0) {
         const newProfile = await db.insert(profile).values({
             id: randomUUIDv7(),
-            userId: user.id,
+            userId: authUser.id,
             handle: nanoid(10),
         }).returning();
         return c.json({
@@ -39,12 +47,15 @@ app.get("/", async (c) => {
         id: tag.id,
         content: tag.content,
         category: tag.category,
-    }).from(userTag).where(eq(userTag.userId, user.id)).leftJoin(tag, eq(userTag.tagId, tag.id))
-    const availability = await db.select().from(userAvailability).where(eq(userAvailability.userId, user.id))
+    }).from(userTag).where(eq(userTag.userId, authUser.id)).leftJoin(tag, eq(userTag.tagId, tag.id))
+    const availability = await db.select().from(userAvailability).where(eq(userAvailability.userId, authUser.id))
 
     return c.json({
         message: "Profile found",
-        profile: pro[0],
+        profile: {
+            ...pro[0],
+            role: newUser[0].role,
+        },
         tags: tags,
         availability: availability
     })
@@ -60,13 +71,13 @@ app.get("/all", async (c) => {
 
     const profiles = await db.select({
         userId: profile.userId,
-        name: user.name,
+        name: profile.name,
         handle: profile.handle,
         gender: profile.gender,
         avatarUrl: profile.avatarUrl,
         statusMessage: profile.statusMessage,
         expertiseSummary: profile.expertiseSummary,
-    }).from(profile).leftJoin(user, eq(profile.userId, user.id))
+    }).from(profile)
 
     let result = []
 
@@ -116,21 +127,14 @@ app.get("/:userId", async (c) => {
     }
 
     const userId = c.req.param("userId")
-    const pro = await db.select({
-        profile,
-        name: user.name,
-    }).from(profile).where(eq(profile.userId, userId)).leftJoin(user, eq(profile.userId, user.id))
+    const pro = await db.select().from(profile).where(eq(profile.userId, userId))
 
     if (pro.length === 0) {
         return c.json({
             message: "Profile not found"
         }, 404)
     }
-    let userProfileTemp = pro[0]
-    let userProfile = {
-        ...userProfileTemp.profile,
-        name: userProfileTemp.name,
-    }
+    let userProfile = pro[0]
     // WIP: - control what a normal user can see
     userProfile.wechat = ""
     const locationVisibility = userProfile.locationVisibility
