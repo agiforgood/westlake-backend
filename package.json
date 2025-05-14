@@ -5,8 +5,8 @@
     "build": "bun build --target=bun --production --outfile=index.ts src/index.ts"
   },
   "dependencies": {
-    "better-auth": "^1.2.7",
-    "better-auth-harmony": "^1.2.4",
+    "@alicloud/green20220302": "^2.20.4",
+    "@alicloud/openapi-client": "^0.4.14",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "hono": "^4.7.8",
