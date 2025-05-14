@@ -28,6 +28,7 @@ export const profile = pgTable("profile", {
     city: text('city'),
     district: text('district'),
     newSnapshot: jsonb('new_snapshot'),
+    isVerified: boolean('is_verified').notNull().default(false),
     extraData: jsonb('extra_data'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow()

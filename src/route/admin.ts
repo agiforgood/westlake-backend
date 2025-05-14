@@ -58,6 +58,7 @@ app.post("/profiles", async (c) => {
             city: snapshot.city,
             district: snapshot.district,
             newSnapshot: null,
+            isVerified: true,
         }).where(eq(profile.id, profileId))
     } else {
         const newProfile = await db.update(profile).set({

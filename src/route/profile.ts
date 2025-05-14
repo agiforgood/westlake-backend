@@ -69,6 +69,16 @@ app.get("/all", async (c) => {
         }, 401)
     }
 
+    let myProfile = await db.select({
+        isVerified: profile.isVerified,
+    }).from(profile).where(eq(profile.userId, authUser.id))
+
+    if (!myProfile[0].isVerified) {
+        return c.json({
+            message: "Unauthorized"
+        }, 401)
+    }
+
     const profiles = await db.select({
         userId: profile.userId,
         name: profile.name,
@@ -121,6 +131,16 @@ app.get("/tags", async (c) => {
 app.get("/:userId", async (c) => {
     const authUser = c.get("user")
     if (!authUser) {
+        return c.json({
+            message: "Unauthorized"
+        }, 401)
+    }
+
+    const authUserProfile = await db.select({
+        isVerified: profile.isVerified,
+    }).from(profile).where(eq(profile.userId, authUser.id))
+
+    if (!authUserProfile[0].isVerified) {
         return c.json({
             message: "Unauthorized"
         }, 401)
