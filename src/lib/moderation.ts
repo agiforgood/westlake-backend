@@ -1,6 +1,6 @@
 import Green20220302, * as $Green20220302 from '@alicloud/green20220302';
-import OpenApi, * as $OpenApi from '@alicloud/openapi-client';
-import Util, * as $Util from '@alicloud/tea-util';
+import * as $OpenApi from '@alicloud/openapi-client';
+import * as $Util from '@alicloud/tea-util';
 import Credential, * as $Credential from '@alicloud/credentials';
 
 const credentialsConfig = new $Credential.Config({

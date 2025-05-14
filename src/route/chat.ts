@@ -1,9 +1,8 @@
 import { Hono } from "hono"
 import { db } from "../db"
-import { profile, userTag, tag, userAvailability, user, message } from "../db/schema";
-import { eq, sql, and, ne, desc, or } from "drizzle-orm";
+import { user, message } from "../db/schema";
+import { eq, sql, and, desc, or } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
-import { nanoid } from "nanoid";
 import { textModeration } from "../lib/moderation"
 
 const app = new Hono<{

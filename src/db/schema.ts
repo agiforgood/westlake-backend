@@ -15,17 +15,17 @@ export const profile = pgTable("profile", {
     gender: integer('gender').notNull().default(0),
     avatarUrl: text('avatar_url'),
     bannerUrl: text('banner_url'),
-    statusMessage: text('status_message'), // 状态消息
-    expertiseSummary: text('expertise_summary'), // 我的专业背景介绍
-    bio: text('bio'), // 一句话介绍自己
-    achievements: text('achievements'), // 我干过哪些令人印象深刻的事情
+    statusMessage: text('status_message'),
+    expertiseSummary: text('expertise_summary'),
+    bio: text('bio'),
+    achievements: text('achievements'),
     coreSkills: text('core_skills').array(),
-    otherSocialIssues: text('other_social_issues'), // 我还想或正在解决哪些社会问题
-    motivation: text('motivation'), // 我为什么选择加入智能向善社会创新网络
-    expectations: text('expectations'), // 我的心愿清单或希望从智能向善网络获得的支持
-    hobbies: text('hobbies'), // 我的其他兴趣爱好
-    inspirations: text('inspirations'), // 我的思想和灵感的来源
-    wechat: text('wechat'), // 联系方式（微信）
+    otherSocialIssues: text('other_social_issues'),
+    motivation: text('motivation'),
+    expectations: text('expectations'),
+    hobbies: text('hobbies'),
+    inspirations: text('inspirations'),
+    wechat: text('wechat'),
     locationVisibility: integer('location_visibility').notNull().default(0),
     province: text('province'),
     city: text('city'),

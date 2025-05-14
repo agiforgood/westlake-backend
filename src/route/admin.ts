@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { db } from "../db"
-import { medal, profile, tag, user, userMedal } from "../db/schema";
+import { medal, profile, tag, userMedal } from "../db/schema";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { adminMiddleware } from "../middleware/admin";
