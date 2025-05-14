@@ -57,6 +57,11 @@ app.post("/profiles", async (c) => {
             province: snapshot.province,
             city: snapshot.city,
             district: snapshot.district,
+            achievements: snapshot.achievements,
+            coreSkills: snapshot.coreSkills,
+            otherSocialIssues: snapshot.otherSocialIssues,
+            hobbies: snapshot.hobbies,
+            inspirations: snapshot.inspirations,
             newSnapshot: null,
             isVerified: true,
         }).where(eq(profile.id, profileId))
