@@ -2,6 +2,7 @@ import { Hono } from "hono"
 import { cors } from "hono/cors"
 import profile from "./route/profile"
 import admin from "./route/admin"
+import chat from "./route/chat"
 import { authMiddleware } from "./middleware/auth"
 
 const app = new Hono<{
@@ -27,6 +28,7 @@ app.use("*", authMiddleware);
 
 app.route("/api/admin", admin)
 app.route("/api/profile", profile)
+app.route("/api/chat", chat)
 
 
 export default app
