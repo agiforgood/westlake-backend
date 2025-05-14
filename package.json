@@ -5,7 +5,7 @@
     "build": "bun build --target=bun --production --outfile=index.ts src/index.ts"
   },
   "dependencies": {
-    "@alicloud/green20220302": "^2.20.4",
+    "@alicloud/green20220302": "2.19.1",
     "@alicloud/openapi-client": "^0.4.14",
     "@hono/arktype-validator": "^2.0.1",
     "arktype": "^2.1.20",
