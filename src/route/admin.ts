@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { db } from "../db"
-import { profile, tag, user } from "../db/schema";
-import { eq, isNotNull } from "drizzle-orm";
+import { medal, profile, tag, user, userMedal } from "../db/schema";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { adminMiddleware } from "../middleware/admin";
 
@@ -107,6 +107,56 @@ app.delete("/tags/:tagId", async (c) => {
 
     return c.json({
         message: "Tag deleted",
+    })
+})
+
+app.post("/medal", async (c) => {
+    const body = await c.req.json()
+    const name = body.name
+    const imageUrl = body.imageUrl
+    const newMedal = await db.insert(medal).values({
+        id: randomUUIDv7(),
+        name: name,
+        imageUrl: imageUrl,
+    }).returning();
+
+    return c.json({
+        message: "Medal created",
+        medal: newMedal
+    })
+})
+
+app.delete("/medal/:medalId", async (c) => {
+    const medalId = c.req.param("medalId")
+    await db.delete(medal).where(eq(medal.id, medalId))
+
+    return c.json({
+        message: "Medal deleted",
+    })
+})
+
+app.post("/medal/user", async (c) => {
+    const body = await c.req.json()
+    const userId = body.userId
+    const medalId = body.medalId
+    const newUserMedal = await db.insert(userMedal).values({
+        userId: userId,
+        medalId: medalId,
+    }).returning();
+
+    return c.json({
+        message: "User medal created",
+        userMedal: newUserMedal
+    })
+})
+
+app.delete("/medal/user/:userId/:medalId", async (c) => {
+    const userId = c.req.param("userId")
+    const medalId = c.req.param("medalId")
+    await db.delete(userMedal).where(and(eq(userMedal.userId, userId), eq(userMedal.medalId, medalId)))
+
+    return c.json({
+        message: "User medal deleted",
     })
 })
 

@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { db } from "../db"
-import { profile, userTag, tag, userAvailability, user } from "../db/schema";
+import { profile, userTag, tag, userAvailability, user, userMedal, medal } from "../db/schema";
 import { eq, sql, and, ne } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { nanoid } from "nanoid";
@@ -50,6 +50,7 @@ app.get("/", async (c) => {
         category: tag.category,
     }).from(userTag).where(eq(userTag.userId, authUser.id)).leftJoin(tag, eq(userTag.tagId, tag.id))
     const availability = await db.select().from(userAvailability).where(eq(userAvailability.userId, authUser.id))
+    const medals = await db.select().from(userMedal).where(eq(userMedal.userId, authUser.id)).leftJoin(medal, eq(userMedal.medalId, medal.id))
 
     return c.json({
         message: "Profile found",
@@ -58,7 +59,8 @@ app.get("/", async (c) => {
             role: newUser[0].role,
         },
         tags: tags,
-        availability: availability
+        availability: availability,
+        medals: medals
     })
 })
 

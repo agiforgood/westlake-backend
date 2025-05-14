@@ -74,3 +74,20 @@ export const message = pgTable("message", {
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
+
+export const medal = pgTable("medal", {
+    id: text('id').primaryKey(),
+    name: text('name').notNull().default(''),
+    imageUrl: text('image_url').notNull().default(''),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow()
+});
+
+export const userMedal = pgTable("user_medal", {
+    userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+    medalId: text('medal_id').notNull().references(() => medal.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow()
+}, (t) => [
+    primaryKey({ columns: [t.userId, t.medalId] }),
+]);
