@@ -7,9 +7,12 @@
   "dependencies": {
     "@alicloud/green20220302": "^2.20.4",
     "@alicloud/openapi-client": "^0.4.14",
+    "@hono/arktype-validator": "^2.0.1",
+    "arktype": "^2.1.20",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "hono": "^4.7.8",
+    "hono-openapi": "^0.4.8",
     "jose": "^6.0.11",
     "nanoid": "^5.1.5",
     "pg": "^8.15.6"

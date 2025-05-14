@@ -1,0 +1,468 @@
+openapi: 3.0.0
+info:
+  title: Westlake Backend API
+  version: 1.0.0
+  description: API documentation for the Westlake Backend service
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the user
+        role:
+          type: string
+          enum: [user, admin]
+          default: user
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        name:
+          type: string
+        handle:
+          type: string
+          description: Unique handle for the user profile
+        gender:
+          type: integer
+          enum: [0, 1, 2]
+          description: 0-Unknown, 1-Male, 2-Female
+        avatarUrl:
+          type: string
+        bannerUrl:
+          type: string
+        statusMessage:
+          type: string
+          description: Status message
+        expertiseSummary:
+          type: string
+          description: Professional background introduction
+        bio:
+          type: string
+          description: One-sentence self-introduction
+        achievements:
+          type: string
+          description: Notable achievements
+        coreSkills:
+          type: array
+          items:
+            type: string
+        otherSocialIssues:
+          type: string
+          description: Other social issues being addressed
+        motivation:
+          type: string
+          description: Motivation for joining the network
+        expectations:
+          type: string
+          description: Wishlist or expected support
+        hobbies:
+          type: string
+          description: Other interests
+        inspirations:
+          type: string
+          description: Sources of thoughts and inspiration
+        wechat:
+          type: string
+          description: WeChat contact
+        locationVisibility:
+          type: integer
+          description: Location visibility level (0-2)
+        province:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        isVerified:
+          type: boolean
+          default: false
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+
+    UserAvailability:
+      type: object
+      properties:
+        userId:
+          type: string
+        weekDay:
+          type: integer
+          description: Day of the week (0-6)
+        timeSlot:
+          type: integer
+          description: Time slot identifier
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        senderId:
+          type: string
+        receiverId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Medal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        imageUrl:
+          type: string
+
+paths:
+  /api/profile:
+    get:
+      summary: Get current user's profile
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  profile:
+                    $ref: "#/components/schemas/Profile"
+                  tags:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Tag"
+                  availability:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UserAvailability"
+                  medals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Medal"
+        "401":
+          description: Unauthorized
+
+    post:
+      summary: Update user profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                snapshot:
+                  $ref: "#/components/schemas/Profile"
+      responses:
+        "200":
+          description: Profile updated successfully
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+
+  /api/profile/all:
+    get:
+      summary: Get all verified profiles
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Profiles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  profiles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        profile:
+                          $ref: "#/components/schemas/Profile"
+                        tags:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/Tag"
+                        availability:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/UserAvailability"
+        "401":
+          description: Unauthorized
+
+  /api/profile/tags:
+    get:
+      summary: Get all available tags
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Tags retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  tags:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Tag"
+        "401":
+          description: Unauthorized
+
+    post:
+      summary: Update user tags
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Tags updated successfully
+        "401":
+          description: Unauthorized
+
+  /api/profile/availability:
+    post:
+      summary: Update user availability
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                timeSlots:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/UserAvailability"
+      responses:
+        "200":
+          description: Availability updated successfully
+        "401":
+          description: Unauthorized
+
+  /api/chat/list:
+    get:
+      summary: Get chat sessions
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Chat sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  sessions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Message"
+        "401":
+          description: Unauthorized
+
+  /api/chat/messages/{userId}:
+    get:
+      summary: Get messages with a specific user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Message"
+        "401":
+          description: Unauthorized
+
+  /api/chat/send:
+    post:
+      summary: Send a message
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receiverId:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "200":
+          description: Message sent successfully
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Receiver not found
+
+  /api/admin/profiles/waiting:
+    get:
+      summary: Get profiles waiting for approval
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Waiting profiles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  profiles:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Profile"
+        "401":
+          description: Unauthorized
+
+  /api/admin/profiles:
+    post:
+      summary: Approve or reject profile changes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                isApproved:
+                  type: boolean
+      responses:
+        "200":
+          description: Profile updated successfully
+        "401":
+          description: Unauthorized
+        "404":
+          description: Profile not found
+
+  /api/admin/medal:
+    post:
+      summary: Create a new medal
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                imageUrl:
+                  type: string
+      responses:
+        "200":
+          description: Medal created successfully
+        "401":
+          description: Unauthorized
+
+  /api/admin/medal/user:
+    post:
+      summary: Assign medal to user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                medalId:
+                  type: string
+      responses:
+        "200":
+          description: Medal assigned successfully
+        "401":
+          description: Unauthorized
