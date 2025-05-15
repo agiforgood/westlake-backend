@@ -222,7 +222,30 @@ app.post("/", async (c) => {
         }, 400)
     }
     const newProfile = await db.update(profile).set({
-        newSnapshot: snapshot,
+        handle: snapshot.handle,
+        gender: snapshot.gender,
+        name: snapshot.name,
+        avatarUrl: snapshot.avatarUrl,
+        bannerUrl: snapshot.bannerUrl,
+        statusMessage: snapshot.statusMessage,
+        expertiseSummary: snapshot.expertiseSummary,
+        bio: snapshot.bio,
+        backgroundDescription: snapshot.backgroundDescription,
+        motivation: snapshot.motivation,
+        expectations: snapshot.expectations,
+        canOffer: snapshot.canOffer,
+        wechat: snapshot.wechat,
+        locationVisibility: snapshot.locationVisibility,
+        province: snapshot.province,
+        city: snapshot.city,
+        district: snapshot.district,
+        achievements: snapshot.achievements,
+        coreSkills: snapshot.coreSkills,
+        otherSocialIssues: snapshot.otherSocialIssues,
+        hobbies: snapshot.hobbies,
+        inspirations: snapshot.inspirations,
+        isVerified: true,
+        newSnapshot: null,
         updatedAt: sql`now()`
     }).where(eq(profile.userId, user.id))
 

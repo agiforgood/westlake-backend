@@ -4,6 +4,7 @@ import { user, message } from "../db/schema";
 import { eq, sql, and, desc, or } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { textModeration } from "../lib/moderation"
+import { use } from "hono/jsx";
 
 const app = new Hono<{
     Variables: {
@@ -52,6 +53,11 @@ app.get("/messages/:userId", async (c) => {
         }, 401)
     }
     const userId = c.req.param("userId")
+    if (userId === authUser.id) {
+        return c.json({
+            message: "Cannot chat with yourself"
+        }, 400)
+    }
     const messages = await db.select().from(message).where(or(
         and(
             eq(message.senderId, authUser.id),
