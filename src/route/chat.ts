@@ -25,13 +25,17 @@ app.get("/list", async (c) => {
         SELECT DISTINCT ON (
             LEAST(sender_id, receiver_id),
             GREATEST(sender_id, receiver_id)
-        ) id, content, sender_id, receiver_id, created_at, updated_at
-        FROM message
-        WHERE sender_id = ${authUser.id} OR receiver_id = ${authUser.id}
+        ) m.id, m.content, m.sender_id, m.receiver_id, m.created_at, m.updated_at,
+        sender_profile.name as sender_name,
+        receiver_profile.name as receiver_name
+        FROM message m
+        LEFT JOIN profile sender_profile ON sender_profile.user_id = m.sender_id
+        LEFT JOIN profile receiver_profile ON receiver_profile.user_id = m.receiver_id
+        WHERE m.sender_id = ${authUser.id} OR m.receiver_id = ${authUser.id}
         ORDER BY
-            LEAST(sender_id, receiver_id),
-            GREATEST(sender_id, receiver_id),
-            created_at DESC
+            LEAST(m.sender_id, m.receiver_id),
+            GREATEST(m.sender_id, m.receiver_id),
+            m.created_at DESC
         `
     );
     return c.json({
