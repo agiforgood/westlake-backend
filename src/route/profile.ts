@@ -141,7 +141,8 @@ app.get("/:userId", async (c) => {
 
     const authUserProfile = await db.select({
         isVerified: profile.isVerified,
-    }).from(profile).where(eq(profile.userId, authUser.id))
+        role: user.role,
+    }).from(profile).where(eq(profile.userId, authUser.id)).leftJoin(user, eq(profile.userId, user.id))
 
     if (!authUserProfile[0].isVerified) {
         return c.json({
@@ -159,7 +160,9 @@ app.get("/:userId", async (c) => {
     }
     let userProfile = pro[0]
     // WIP: - control what a normal user can see
-    userProfile.wechat = ""
+    if (authUserProfile[0].role !== "admin") {
+        userProfile.wechat = ""
+    }
     const locationVisibility = userProfile.locationVisibility
     if (locationVisibility < 2) {
         userProfile.district = ""
