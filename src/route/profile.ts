@@ -161,7 +161,7 @@ app.get("/:userId", async (c) => {
     let userProfile = pro[0]
     // WIP: - control what a normal user can see
     if (authUserProfile[0].role !== "admin") {
-        userProfile.wechat = "仅管理员可见"
+        userProfile.wechat = null
     }
     const locationVisibility = userProfile.locationVisibility
     if (locationVisibility < 2) {
