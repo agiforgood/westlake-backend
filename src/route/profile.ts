@@ -90,6 +90,8 @@ app.get("/all", async (c) => {
         avatarUrl: profile.avatarUrl,
         statusMessage: profile.statusMessage,
         expertiseSummary: profile.expertiseSummary,
+        createdAt: profile.createdAt,
+        coreSkills: profile.coreSkills,
     }).from(profile)
 
     let result = []
