@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { db } from "../db"
 import { profile, userTag, tag, userAvailability, user, userMedal, medal } from "../db/schema";
-import { eq, sql, and, ne } from "drizzle-orm";
+import { eq, sql, and, ne, inArray } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { nanoid } from "nanoid";
 import { textModeration } from "../lib/moderation"
@@ -82,6 +82,10 @@ app.get("/all", async (c) => {
         }, 401)
     }
 
+    const page = parseInt(c.req.query('page') || '1')
+    const limit = Math.min(parseInt(c.req.query('limit') || '50'), 500)
+    const offset = (page - 1) * limit
+
     const profiles = await db.select({
         userId: profile.userId,
         name: profile.name,
@@ -93,27 +97,77 @@ app.get("/all", async (c) => {
         createdAt: profile.createdAt,
         coreSkills: profile.coreSkills,
     }).from(profile)
+      .limit(limit)
+      .offset(offset)
 
-    let result = []
-
-    for (const profile of profiles) {
-        const tags = await db.select({
-            id: tag.id,
-            content: tag.content,
-            category: tag.category,
-        }).from(userTag).where(eq(userTag.userId, profile.userId)).leftJoin(tag, eq(userTag.tagId, tag.id))
-        const availability = await db.select().from(userAvailability).where(eq(userAvailability.userId, profile.userId))
-        const tempProfile = {
-            profile: profile,
-            tags: tags,
-            availability: availability
+    const userIds = profiles.map(p => p.userId)
+    
+    let allTags = []
+    let allAvailabilities = []
+    
+    if (userIds.length > 0) {
+        const batchSize = 500
+        for (let i = 0; i < userIds.length; i += batchSize) {
+            const batch = userIds.slice(i, i + batchSize)
+            
+            const batchTags = await db.select({
+                userId: userTag.userId,
+                id: tag.id,
+                content: tag.content,
+                category: tag.category,
+            }).from(userTag)
+              .leftJoin(tag, eq(userTag.tagId, tag.id))
+              .where(inArray(userTag.userId, batch))
+            
+            const batchAvailabilities = await db.select()
+              .from(userAvailability)
+              .where(inArray(userAvailability.userId, batch))
+            
+            allTags = [...allTags, ...batchTags]
+            allAvailabilities = [...allAvailabilities, ...batchAvailabilities]
         }
-        result.push(tempProfile)
     }
+    
+    const tagsMap = new Map()
+    const availabilitiesMap = new Map()
+    
+    allTags.forEach(t => {
+        if (!tagsMap.has(t.userId)) {
+            tagsMap.set(t.userId, [])
+        }
+        tagsMap.get(t.userId).push({
+            id: t.id,
+            content: t.content,
+            category: t.category
+        })
+    })
+    
+    allAvailabilities.forEach(a => {
+        if (!availabilitiesMap.has(a.userId)) {
+            availabilitiesMap.set(a.userId, [])
+        }
+        availabilitiesMap.get(a.userId).push(a)
+    })
+
+    const result = profiles.map(profile => ({
+        profile: profile,
+        tags: tagsMap.get(profile.userId) || [],
+        availability: availabilitiesMap.get(profile.userId) || []
+    }))
+
+    const totalCount = await db.select({ count: sql<number>`count(*)` })
+        .from(profile)
+        .then(res => res[0]?.count || 0)
 
     return c.json({
         message: "Profiles",
-        profiles: result
+        profiles: result,
+        pagination: {
+            page,
+            limit,
+            total: totalCount,
+            totalPages: Math.ceil(totalCount / limit)
+        }
     })
 })
 
